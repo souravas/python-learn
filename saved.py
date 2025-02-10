@@ -871,5 +871,1300 @@ if __name__ == '__main__':
 
 
 
+from typing import Self
+
+# Dunder methods are double underscore methods.
+# They are not supposed to be called directly.
+class Book:
+    # init called automatically during initialization
+    def __init__(self, title: str, pages: int):
+        self.title = title
+        self.pages = pages
+
+    # called when len(object) is used.
+    def __len__(self):
+        return self.pages
+
+    # Can't give return type as Book. Hence, using Self.
+    def __add__(self, other: Self) -> Self:
+        combined_title: str = f'{self.title} & {other.title}'
+        combined_pages: int = self.pages + other.pages
+        return Book(combined_title, combined_pages)
+
+def main():
+    py_daily: Book = Book('Pydaily', 100)
+    harry_potter: Book = Book('Harry Potter', 340)
+
+    print(len(py_daily))
+
+    combined_books: Book = py_daily + harry_potter
+    print(combined_books.title)
+    print(combined_books.pages)
+
+
+if __name__ == '__main__':
+    main()
+
+
+
+
+class Person:
+    def __init__(self, name: str, age: int):
+        self.name = name
+        self.age = age
+
+    # for showing to user or yourself
+    def __str__(self):
+        return f'{self.name} : {self.age} years old'
+
+    # more technical -> for developers
+    def __repr__(self):
+        return f'Person(name={self.name}, age={self.age})'
+
+def main():
+    mario: Person = Person('Mario', 27)
+    print(mario) # <__main__.Person object at 0x1051ca490>
+    # print calls __repr__ method by default
+    # if we override using __str__ method, then, it gets printed instead of __repr__:
+    # Mario : 27 years old
+
+    print(repr(mario)) # <__main__.Person object at 0x102b7ed90>
+    # if we override using __repr__ method, then, it will print:
+    # Person(name=Mario, age=27)
+
+
+if __name__ == '__main__':
+    main()
+
+
+
+from typing import Self
+
+
+class Car:
+    def __init__(self, brand: str, car_id: int, color: str):
+        self.brand = brand
+        self.car_id = car_id
+        self.color = color
+
+    def __eq__(self, other: Self) -> bool:
+        # return self.car_id == other.car_id
+        print(self.__dict__) # {'brand': 'BMW', 'car_id': 1, 'color': 'red'}
+        print(other.__dict__) # {'brand': 'BMW', 'car_id': 1, 'color': 'red'}
+        return self.__dict__ == other.__dict__ # compare all values
+
+def main():
+    car1: Car = Car('BMW', 1, 'red')
+    car2: Car = Car('BMW', 1, 'red')
+
+    print(car1 == car2) # False -> check if both are same memory location
+    # if we override __eq__ dunder method, it will use our method for comparison
+
+
+if __name__ == '__main__':
+    main()
+
+
+# method is a function defined inside a class.
+# function is defined outside class
+
+
+
+from random import choice
+from datetime import datetime
+
+class ChatBot:
+    def __init__(self, name: str, age: int):
+        self.name = name
+        self.age = age
+
+
+    def get_description(self) -> str:
+        return f'{self.name} is {self.age} years old'
+
+    def get_response(self, text: str) -> str:
+        lowered: str = text.lower()
+
+        if 'hello' in lowered:
+            return f'{self.name}: hey there!'
+        elif 'bye' in lowered:
+            return 'see you'
+        elif 'time' in lowered:
+            now: datetime = datetime.now()
+            return f'{now:%H:%M:%S}'
+        else:
+            random_responses: list[str] = [
+                "i don't know",
+                "what?",
+                "i don't understand"
+            ]
+            return choice(random_responses)
+
+    def run(self):
+        while True:
+            user_input: str = input('you: ')
+            if user_input == 'exit':
+                print('thanks')
+                break
+
+            response: str = self.get_response(user_input)
+            print(response)
+
+def main():
+    chatbot: ChatBot = ChatBot('Megamind', 26)
+    chatbot.get_description()
+    chatbot.run()
+
+if __name__ == '__main__':
+    main()
+
+
+class Animal:
+    def __init__(self, name: str):
+        self.name = name
+
+    def drink(self):
+        print(f'{self.name} is drinking')
+
+    def eat(self):
+        print(f'{self.name} is eating')
+
+class Dog(Animal):
+    def __int__(self, name: str):
+        super().__init__(name)
+
+    def bark(self):
+        print(f'{self.name} barks!')
+
+    def routine(self):
+        self.eat()
+        self.drink()
+        self.bark()
+
+
+class Cat(Animal):
+    def __int__(self, name: str):
+        super().__init__(name)
+
+    def meow(self):
+        print(f'{self.name} meow!')
+
+    def routine(self):
+        self.eat()
+        self.drink()
+        self.meow()
+
+
+def main():
+    dog: Dog = Dog('Boomerang')
+    cat: Cat = Cat('Snowball')
+
+    dog.bark()
+    cat.meow()
+
+if __name__ == '__main__':
+    main()
+
+
+
+# from typing import override
+
+class Shape:
+    def __init__(self, name: str, sides: int):
+        self.name = name
+        self.sides = sides
+
+    def describe(self):
+        print(f'{self.name} has {self.sides} sides')
+
+    def shape_method(self):
+        print(f'{self.name}: shape_method()')
+
+
+class Square(Shape):
+    def __init__(self, size: float):
+        super().__init__('Square', 4)
+        self.size = size
+
+    # @override -> added in python 3.12
+    def describe(self):
+        print(f'{self.name} with size {self.size}')
+
+class Rectangle(Shape):
+    def __init__(self, length: float, height: float):
+        super().__init__('Rectangle', 4)
+        self.length = length
+        self.height = height
+
+    # @override -> added in python 3.12
+    def describe(self):
+        print(f'{self.name} with {self.height} * {self.length}')
+
+def main():
+    square: Square = Square(20)
+    square.describe()
+    square.shape_method()
+
+    rectangle: Rectangle = Rectangle(15, 10)
+    rectangle.describe()
+    rectangle.shape_method()
+
+if __name__ == '__main__':
+    main()
+
+
+class Calculator:
+    def __init__(self, version: int):
+        self.version = version
+
+    @staticmethod
+    def add(*numbers: float):
+        return sum(numbers)
+
+    def get_version(self):
+        return self.version
+
+def main():
+    calculator: Calculator = Calculator(version=1)
+    print(calculator.add(1,2,3,4))
+
+    print(Calculator.add(1,2,3,4))
+
+if __name__ == '__main__':
+    main()
+
+
+
+
+from typing import Self
+
+
+class Car:
+    LIMITER: int = 200
+
+    def __init__(self, brand: str, max_speed: int):
+        self.brand = brand
+        self.max_speed = max_speed
+
+    @classmethod
+    def change_limit(cls, new_limit: int):
+        cls.LIMITER = new_limit
+        # self.LIMITER only changes for single object.
+        # cls.LIMITER updates for all objects
+
+    def display_info(self):
+        print(f'{self.brand} (max={self.max_speed}, limiter={self.LIMITER})')
+
+
+def main():
+    bmw: Car = Car('BMW', 240)
+    toyota: Car = Car('Toyota', 190)
+
+    bmw.display_info()
+    toyota.display_info()
+
+    Car.change_limit(150)
+    # toyota.change_limit(140) # this will also set limiter for all instances.
+    # toyota.LIMITER = 140 # only sets for toyota instance. not for other instances.
+
+    bmw.display_info()
+    toyota.display_info()
+
+
+if __name__ == '__main__':
+    main()
+
+
+
+
+from typing import Self
+
+
+class Car:
+    LIMITER: int = 200
+
+    def __init__(self, brand: str, max_speed: int):
+        self.brand = brand
+        self.max_speed = max_speed
+
+    @classmethod
+    def change_limit(cls, new_limit: int):
+        cls.LIMITER = new_limit
+        # self.LIMITER only changes for single object.
+        # cls.LIMITER updates for all objects
+
+    @classmethod
+    def autogenerate_max_speed(cls, brand: str):
+        lowered: str = brand.lower()
+        max_speed: int = 200
+
+        if lowered=='toyota':
+            max_speed = 270
+        elif lowered=='bmw':
+            max_speed = 290
+
+        return cls(brand, max_speed)
+
+    def display_info(self):
+        print(f'{self.brand} (max={self.max_speed}, limiter={self.LIMITER})')
+
+
+def main():
+    bmw: Car = Car.autogenerate_max_speed('BMW')
+    bmw.display_info()
+
+    ferrari: Car = Car.autogenerate_max_speed('Ferrari')
+    ferrari.display_info()
+
+if __name__ == '__main__':
+    main()
+
+
+from abc import ABC, abstractmethod
+
+class Appliance(ABC): #AbstractBaseClass
+    def __init__(self, brand: str, version_no: int):
+        self.brand = brand
+        self.version_no = version_no
+        self.is_turned_on: bool = False
+
+    @abstractmethod
+    def turn_on(self):
+        ...
+
+    @abstractmethod
+    def turn_off(self):
+        ...
+
+class Lamp(Appliance):
+    def __init__(self, brand: str, version_no: int):
+        super().__init__(brand, version_no)
+
+    def turn_on(self):
+        if self.is_turned_on:
+            print(f'{self.brand} already turned on')
+        else:
+            self.is_turned_on = True
+            print(f'{self.brand} turned on')
+
+    def turn_off(self):
+        if self.is_turned_on:
+            self.is_turned_on = False
+            print(f'{self.brand} turned off')
+        else:
+            print(f'{self.brand} already turned off')
+
+class Oven(Appliance):
+    def __init__(self, brand: str, version_no: int):
+        super().__init__(brand, version_no)
+
+    def turn_on(self):
+        # raise NotImplementedError instead of pass, as it gives proper error message
+        raise NotImplementedError('Need to add functionality for turn_on()')
+
+    def turn_off(self):
+        # raise NotImplementedError instead of pass, as it gives proper error message
+        raise NotImplementedError('Need to add functionality for turn_off()')
+
+def main():
+    lamp: Lamp = Lamp('Z-Lite', 1)
+    lamp.turn_on()
+    lamp.turn_on()
+    lamp.turn_off()
+    lamp.turn_off()
+
+    oven: Oven = Oven('Bosch', 2)
+    oven.turn_on()
+    oven.turn_off()
+
+if __name__ == '__main__':
+    main()
+
+
+
+class Car:
+    __YEAR: int = 2000 # name mangling
+    # this cannot be used in subclasses.
+    # if we want to use it in subclass, use _YEAR in Car class, instead of __YEAR
+    # _YEAR -> tells developer that it should only be used in classes & subclasses.
+
+    def __init__(self, brand: str, fuel_type: str):
+        self.__brand = brand # name mangling
+        self.__fuel_type = fuel_type # name mangling
+
+        self.var: str = 'red'
+        # this breaks the code in Toyota subclass.
+        # to fix it, jus tuse self.__var for this variable in Car class.
+        # self.__var: str = 'red'
+
+    def drive(self):
+        print(f'driving: {self.__brand}')
+
+    def __get_description(self): # name mangling with methods
+        print(f'{self.__brand}: {self.__fuel_type}')
+
+    def display_color(self):
+        self.__get_description() # mangled names can be accessed easily inside the class
+        print(f'{self.__brand} is {self.var.capitalize()}') # this breaks code in Toyota subclass.
+        # print(f'{self.__brand} is {self.__var.capitalize()}') # this fixes the AttributeError in Toyota subclass
+
+class Toyota(Car):
+    def __init__(self, fuel_type: str):
+        super().__init__('Toyota', fuel_type)
+        self.var = 100 # has the same name as super class var, which is string.
+        # this breaks the code in
+
+    def get_year(self):
+        return self.__YEAR # raise AttributeError.
+        # if we want to use it in subclass, use _YEAR in Car class.
+        # this just tells developer that it should only be used in classes & subclasses.
+
+def main():
+    car: Car = Car('Toyota', 'Electric')
+    car.drive()
+
+    # name mangling ensure that we use the mangled names only inside the classes.
+    # to use it outside, we have to follow the below weird syntax:
+    print(car._Car__brand) # Toyota
+    # print(car.__get_description()) # raises error. Car has no method
+    car._Car__get_description() # Toyota: Electric
+
+    toyota: Toyota = Toyota('Electric')
+    toyota.display_color() # AttributeError: 'int' object has no attribute 'capitalize'
+    # we defined 'var' as a int in Toyota.
+    # it's already used in super class for display_color()
+    # To fix this issue, just use __var for the Car class.
+
+if __name__ == '__main__':
+    main()
+
+
+
+print(True)
+print(1,2,True,['a','b'])
+print('a','b','c', sep='-', end='.\n') # a-b-c.
+print('Bob')
+people: list[str] = ['Mario', 'James', 'Hannah']
+print(people) # ['Mario', 'James', 'Hannah']
+print(*people) # Mario James Hannah
+print(*people, sep=', ', end='.\n') # Mario, James, Hannah.
+
+
+
+elements: list[str] = ['A', 'B', 'C']
+
+for index, element in enumerate(elements, start=1): # starting value is set as 1
+    print(f'{index}: {element}')
+    # 1: A
+    # 2: B
+    # 3: C
+
+
+
+
+a: float = 200.312399
+b: float = 18.12132
+c: float = 47.12312
+result: float = a+b+c
+print(result) # 265.55683899999997
+
+rounded: float = round(result, 2) # round to 2 decimal places
+print(rounded) # 265.56
+
+print(round(result, 2)) # 265.56
+print(round(result, 1)) # 265.6
+print(round(result, 0)) # 266.0
+print(round(result, -1)) # 270.0 -> round actual number.
+print(round(result, -2)) # 300.0
+
+
+my_range: range = range(1,6)
+print(my_range) # range(1, 6) -> range object
+print(list(my_range)) # [1, 2, 3, 4, 5]
+
+my_range: range = range(0,10,2)
+print(my_range)
+print(list(my_range)) # [0, 2, 4, 6, 8]
+
+my_range: range = range(0,-5,-1)
+print(my_range)
+print(list(my_range)) # [0, -1, -2, -3, -4]
+
+for i in range(3):
+    print(i)
+
+
+numbers: list[int] = [1,2,3,4,5]
+print(numbers[2:4]) # [3, 4]
+
+text: str = 'Hello, World!'
+first_three: slice = slice(0,3)
+print(text[first_three]) # Hel
+
+reverse_slice: slice = slice(None, None, -1) # [::-1]
+print(text[reverse_slice]) # !dlroW ,olleH
+
+step_two: slice = slice(None, None, 2) # [::2]
+print(text[step_two]) # Hlo ol!
+
+
+from typing import Any
+
+print(globals()) # {'__name__': '__main__', '__doc__': None, '__package__': None, '__loader__': <_frozen_importlib_external.SourceFileLoader object at 0x102585a50>, '__spec__': None, '__annotations__': {}, '__builtins__': <module 'builtins' (built-in)>, '__file__': '/Users/souravas/Developer/PythonProject/main.py', '__cached__': None, 'Any': typing.Any}
+# everything visible in the global space
+# if we import everything from math, then, it will pollute the global space
+# if function is defined, it will also be present in globals()
+
+def func():
+    ...
+
+my_globals: dict[str, Any] = dict(globals()) # create copy of globals
+# if we use globals directly, it can create runtime errors if globals() changes while iterating
+for k, v in my_globals.items():
+    print(f'{k}: {v}')
+    # __name__: __main__
+    # __doc__: None
+    # __package__: None
+    # __loader__: <_frozen_importlib_external.SourceFileLoader object at 0x100eb1a50>
+    # __spec__: None
+    # __annotations__: {'my_globals': dict[str, typing.Any]}
+    # __builtins__: <module 'builtins' (built-in)>
+    # __file__: /Users/souravas/Developer/PythonProject/main.py
+    # __cached__: None
+    # Any: typing.Any
+    # func: <function func at 0x100ed8720>
+
+
+print(locals()) # {'__name__': '__main__', '__doc__': None, '__package__': None, '__loader__': <_frozen_importlib_external.SourceFileLoader object at 0x104b51a50>, '__spec__': None, '__annotations__': {}, '__builtins__': <module 'builtins' (built-in)>, '__file__': '/Users/souravas/Developer/PythonProject/main.py', '__cached__': None}
+# in the outer scope, locals & globals are same
+
+def add(a: int, b: int):
+    result: int = a + b
+    print(result)
+
+    print('add() has these locals: ', locals())
+    # add() has these locals:  {'a': 1, 'b': 1, 'result': 2}
+    print('add() has these globals: ', globals())
+    # add() has these globals:  {'__name__': '__main__', '__doc__': None, '__package__': None, '__loader__': <_frozen_importlib_external.SourceFileLoader object at 0x10488da50>, '__spec__': None, '__annotations__': {}, '__builtins__': <module 'builtins' (built-in)>, '__file__': '/Users/souravas/Developer/PythonProject/main.py', '__cached__': None, 'add': <function add at 0x1048b4720>}
+    # add is also defined in globals() -> we can call add() again from inside add() -> recursion
+add(1,1)
+
+
+wifi_enabled: bool = True
+has_electricity: bool = True
+has_subscription: bool = True
+
+if wifi_enabled and has_electricity and has_subscription:
+    print('Connected to internet')
+
+requirements: list[bool] = [wifi_enabled, has_electricity, has_subscription]
+if all(requirements):
+    print('Connected to internet')
+
+people_voted: list[int] = [1,1,1,0,1,0,1,1,1,0]
+if all(people_voted):
+    print('Everyone voted')
+else:
+    print('Some people did not vote...')
+
+if not all(people_voted):
+    print('Someone did not vote...')
+else:
+    print('Everyone voted!')
+
+
+people_voted: list[int] = [0,1,0,0,0]
+
+if any(people_voted):
+    print('At least 1 person voted')
+else:
+    print('No one voted!')
+
+
+number: int = 10
+pi: float = 3.14
+text: str = 'banana'
+my_list: list[int] = [1,2,3]
+
+# actual value is checked in isinstance.
+print(isinstance(number, int)) # True
+print(isinstance(number, str)) # False
+print(isinstance(my_list, list)) # True
+print(isinstance(pi, int | float)) # True
+
+class Animal:
+    pass
+
+class Cat(Animal):
+    pass
+
+print(isinstance(Cat(), Animal)) # True. Cat is an Animal
+print(isinstance(Animal(), Cat)) # False. Animal is not a Cat
+
+
+
+from difflib import get_close_matches
+
+def get_best_match(user_question: str, knowledge: dict) -> str | None:
+    questions: list[str] = [q for q in knowledge] # knowledge.keys() and knowledge are same while iterating
+    matches: list[str] = get_close_matches(user_question, questions, n=1, cutoff=0.6) # 1 result. 60 percent match
+
+    if matches:
+        return matches[0]
+    # returns None by default if no result
+
+def run_chatbot(knowledge: dict) -> None:
+    while True:
+        user_input: str = input('You: ')
+
+        best_match: str | None = get_best_match(user_input, knowledge)
+        response: str | None = knowledge.get(best_match)
+
+        if response:
+            print(f'Bot: {response}')
+        else:
+            print(f'Bot: I do not understand...')
+
+def main():
+    brain: dict[str, str] = {'hello':'hey there!',
+                             'how are you?': 'I am good, thanks!',
+                             'what time is it?': 'No clue',
+                             'what can you do?': 'I can answer questions!',
+                             'ok': 'Great'}
+    run_chatbot(knowledge=brain)
+
+
+if __name__ == '__main__':
+    main()
+
+
+
+fruit: str = 'apple'
+number: int = 10
+
+def fun():
+    print("fun() was called!")
+
+
+print(f'callable(): {callable(fruit)}') # False
+# fruit() -> cannot be used as it's not callable
+
+print(f'callable(): {callable(fun)}') # True
+# fun() -> can be called with ()
+
+print(f'callable(): {callable(range)}') # True
+print(f'callable(): {callable(str)}') # True
+
+
+if callable(fun):
+    fun()
+else:
+    print('object was not called!')
+
+
+
+numbers: list[int] = list(range(1,21))
+print(numbers)
+
+def is_even(number: int) -> bool:
+    return number%2==0
+
+even_numbers: filter = filter(is_even, numbers)
+print(even_numbers) # <filter object at 0x104299a80>
+print(list(even_numbers)) # [2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+
+
+even_numbers: filter = filter(lambda n: n % 2 == 0, numbers)
+print(even_numbers)
+print(list(even_numbers)) # [2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+
+people: list[str] = ['Anna', 'Bob', 'Betty', 'James', 'John']
+long_names: filter = filter(lambda name: len(name) > 4, people)
+print(list(long_names)) # ['Betty', 'James']
+
+long_names_ls : list[str] = [name for name in people if len(name)>4]
+print(long_names_ls) # ['Betty', 'James']
+
+# filter is more memory efficient as it doesn't load everything in memory.
+# filter can be useful for loops with large number of values.
+# list comprehension is more popular,but loads everything in memory.
+
+
+numbers: list[int] = [1,2,3,4,5]
+
+def double(number: int) -> int:
+    return number*2
+
+doubled: map = map(double, numbers)
+print(doubled) # <map object at 0x102d69c90>
+print(list(doubled)) # [2, 4, 6, 8, 10]
+
+doubled: map = map(lambda n: n*2, numbers)
+print(list(doubled)) # [2, 4, 6, 8, 10]
+
+doubled_ls: list[int] = [number*2 for number in numbers]
+print(doubled_ls) # [2, 4, 6, 8, 10]
+
+
+numbers: list[int] = [1,2,3,4,5]
+letters: list[str] = ['a','b','c']
+
+def combine_elements(number:int, letter:str) -> tuple[int,str]:
+    return number, letter
+
+combined: map = map(combine_elements, numbers, letters)
+print(list(combined)) # [(1, 'a'), (2, 'b'), (3, 'c')]
+# stops when the shortest list runs out of elements. 4 & 5 are skipped.
+
+combined: map = map(lambda n, l: (n,l), numbers, letters)
+print(list(combined)) # [(1, 'a'), (2, 'b'), (3, 'c')]
+# stops when the shortest list runs out of elements. 4 & 5 are skipped.
+
+
+
+
+numbers: list[int] = [1,10,5,3]
+
+sorted_numbers: list[int] = sorted(numbers)
+print(sorted_numbers) # [1, 3, 5, 10]
+
+people: list[str] = ['Mario', 'James', 'Anna', 'Tom']
+sorted_names: list[str] = sorted(people) # ['Anna', 'James', 'Mario']
+# sort by ascii value. # A - 65 / a - 97
+print(sorted_names)
+
+sorted_names: list[str] = sorted(people, reverse=True)
+print(sorted_names) # ['Tom', 'Mario', 'James', 'Anna']
+
+sorted_names: list[str] = sorted(people, key=lambda x: len(x))
+print(sorted_names) # ['Tom', 'Anna', 'Mario', 'James']
+
+
+
+class Animal:
+    def __init__(self, name: str, weight: float) -> None:
+        self.name = name
+        self.weight = weight
+
+    def __repr__(self) -> str:
+        return f'{self.name}={self.weight}kg'
+
+cat: Animal = Animal('Cat', 10)
+dog: Animal = Animal('Dog', 5)
+kangaroo: Animal = Animal('Kangaroo', 50)
+
+sorted_animals: list[Animal] = sorted([cat, dog, kangaroo], key=lambda animal: animal.weight)
+print(sorted_animals) # [Dog=5kg, Cat=10kg, Kangaroo=50kg]
+
+result: int = eval('1+10+100')
+print(result)  # 111
+
+x: int = 5
+y: int = 10
+print(eval('x+y'))  # 15
+
+while True:
+    user_input: str = input('enter math: ')  # can do math
+    print(eval(user_input))
+
+# be careful while taking user input and executing using eval()
+# it can execute any code entered by user.
+
+
+
+# eval -> evaluates the code & return something
+# exec -> executes the code & doesn't return anything. execute several lines of code.
+
+code: str = """
+x: int = 10
+y: int = 20
+print(x+y)
+"""
+exec(code) # 30
+
+while True:
+    user_input: str = input('Command: ')
+    exec(user_input)
+
+# be careful while taking user input and executing using exec()
+# it can execute any code entered by user.
+
+
+numbers: list[int] = [1, 2, 3, 4]
+letters: list[str] = ['a', 'b', 'c', 'd']
+symbols: list[str] = ['!', '$', '&']
+
+zipped: zip = zip(numbers, letters)
+print(zipped)  # <zip object at 0x100eb1dc0>
+print(list(zipped))  # [(1, 'a'), (2, 'b'), (3, 'c'), (4, 'd')]
+
+# zip never goes past the shortest element.
+for n, l, s in zip(numbers, letters, symbols):
+    print(n, l, s, sep=' : ')
+
+for n, l, s in zip(numbers, letters, symbols, strict=True):  # strict -> raises error if all are not of equal length
+    print(n, l, s, sep=' : ')
+
+
+class User:
+    """
+    Base class for creating users.
+    This is a docstring. If you hover over the module, it will show this docstring.
+    """
+
+    def __init__(self, user_id: int):
+        self.user_id = user_id
+
+    def show_id(self):
+        """prints the user_id as an int"""
+        print(self.user_id)
+
+
+def user_exists(user: User, database: set[User]) -> bool:
+    """
+    Checks if a user is inside a database.
+
+    :param user: The user to check for
+    :param database: The database to check inside
+    :return: bool
+    """
+    return user in database
+
+def main():
+    user: User = User(1)
+    print(User.__doc__)
+
+main()
+
+
+
+var: int = 10
+
+def add(a: int, b: int) -> int:
+    return a + b
+
+print(f'{var=}') # var=10
+print(f'{add(5,10) = }') # add(5,10) = 15
+
+big_number: float = 123456789
+print(f'{big_number:,}') # 123,456,789 -> 1000 digit separator
+print(f'{big_number:_}') # 123_456_789 -> 1000 digit separator
+
+big_number: float = 123_456_789 # easier to read
+print(big_number) # 123456789
+
+fraction: float = 1234.5678
+print(f'{fraction:.2f}') # 1234.57 -> round last 2 decimal places
+print(f'{fraction:,.2f}') # 1,234.57 -> round last 2 decimal places & with 1000 digit separator
+
+percent: float = 0.5
+print(f'{percent:.2%}') # 50.00% -> round to 2 decimal places.
+print(f'{percent:.0%}') # 50% -> round to whole number.
+
+percent: float = 55.5555555555
+print(f'{percent:_.3%}') # 5_555.556% -> round to 3 decimal places & with 1000 digit separator
+
+var: str = 'BOB'
+print(f'{var:10}: Hello') # occupy 10 spaces left aligned including the var. #BOB       : Hello
+print(f'{var:<10}: Hello') # occupy 10 spaces left aligned including the var. #BOB       : Hello
+print(f'{var:>10}: Hello') # occupy 10 spaces with right aligned including the var. #       BOB: Hello
+print(f'{var:^10}: Hello') # occupy 10 spaces with center aligned including the var. #   BOB    : Hello
+print(f'{var:.>10}') # occupy 10 spaces with right aligned including the var. fill empty space with '.' #.......BOB
+print(f'{var:.<10}') # occupy 10 spaces with left aligned including the var. fill empty space with '.' #BOB.......
+print(f'{var:.^10}') # occupy 10 spaces with center aligned including the var. fill empty space with '.' #...BOB....
+
+numbers: list[int] = [1,100,1_000,10_000]
+for number in numbers:
+    print(f'{number:_>5}: counting!')
+    # ____1: counting!
+    # __100: counting!
+    # _1000: counting!
+    # 10000: counting!
+
+for number in numbers:
+    print(f'{number:>5}: counting!')
+    #     1: counting!
+    #   100: counting!
+    #  1000: counting!
+    # 10000: counting!
+
+path: str = '\\Users\\sourav\\Documents' # escape \ character
+print(path) # \Users\sourav\Documents
+
+path: str = r'\Users\sourav\Documents' # considers as a raw string.
+print(path) # \Users\sourav\Documents
+
+user: str = 'Sourav'
+path: str = fr'\Users\{user}\Documents' # f string & raw string
+print(path) # \Users\Sourav\Documents
+
+
+
+def start_program(db: dict[int, str]) -> None:
+    assert db, 'Database is empty' # useful for development. not for production as code is already deployed.
+
+    print('Loaded:', db)
+    print('Program started.')
+
+def main():
+    db1: dict[int,str] = {0:'a'}
+    start_program(db=db1)
+
+    db2: dict[int,str] = {}
+    start_program(db=db2) # AssertionError: Database is empty
+
+
+if __name__ == '__main__':
+    main()
+
+var: int = 10
+assert var > 0, f'{var} is not more than 0'
+
+
+a, b = 5, 10
+print(a,b) # 5 10
+
+a, b = [5, 10]
+print(a,b) # 5 10
+
+a,*b = 'abcdef'
+print(a,b) # a ['b', 'c', 'd', 'e', 'f']
+
+a,*b, c = 'abcdef'
+print(a,b,c) # a ['b', 'c', 'd', 'e'] f
+
+*_, last = 'abdef' # if we only care about any value, we use '_' -> convention for not important
+print(last) # f
+
+def add(a: int, b: int):
+    print(f'{a+b=}')
+
+numbers: dict[str, int] = {'a':5,'b':10}
+# add(5,10)
+add(**numbers) # unpacking the dictionary # a+b=15
+
+numbers: list[int] = [1,2,3,4,5]
+params: dict[str,str] = {'sep':'-', 'end': '.'}
+print(*numbers, **params) # 1-2-3-4-5.
+
+
+
+a: int = 200
+b: int = 200
+
+print(a==b) # True. a and b are equal.
+print(a is b) # True. memory address of a can be equal to b for small values
+
+a: int = 2000
+b: int = int('2000')
+
+print(a==b) # False. a and b are equal.
+print(a is b) # False. memory address of a is not equal to b for large values
+print(f'{id(a)=}') # id(a)=4331661680
+print(f'{id(b)=}') # id(b)=4331667248
+
+# for None, we use 'is None' instead of '=='
+# None is singleton -> only one instance of None in memory.
+# Hence, is None checks is most reliable.
+# == checks for equality, meaning it depends on how __eq__ method is implemented for object being compared.
+var: int | None = None
+if var is None: # condition is true.
+    print('there is no var...')
+else:
+    print(f'var is: {var}')
+
+
+class Animal:
+    ...
+
+cat: Animal = Animal()
+dog: Animal = Animal()
+
+print(cat is dog) # False
+
+
+
+from dataclasses import dataclass
+
+@dataclass
+class Coin:
+    name: str
+    value: float
+    id: str
+
+# class Coin:
+#     def __init__(self, name: str, value: float, coin_id: str):
+#         self.name = name
+#         self.value = value
+#         self.coin_id = coin_id # id can't be used as value in normal classes. so, we are using coin_id here.
+#         # id can be used in dataclasses
+#     def __repr__(self):
+#         ...
+#     def __eq__(self, other):
+#         ...
+
+def main():
+    bitcoin: Coin = Coin('Bitcoin', 10_000, 'BTC')
+    bitcoin2: Coin = Coin('Bitcoin', 10_000, 'BTC')
+    ripple: Coin = Coin('Ripple', 200, 'XRP')
+
+    print(bitcoin) # Coin(name='Bitcoin', value=10000, id='BTC')
+    print(ripple) # Coin(name='Ripple', value=200, id='XRP')
+
+    print(bitcoin==ripple) # False -> check values by default.
+    print(bitcoin==bitcoin2) # True -> check values by default.
+
+    print(bitcoin.value == ripple.value) # False
+
+if __name__ == '__main__':
+    main()
+
+
+
+from dataclasses import dataclass, field
+
+@dataclass
+class Fruit:
+    name: str
+    grams: float
+    price_per_kg: float
+    edible: bool = field(default=True) # default value will be True for this variable
+    # default values should be last.
+    # for simple values, we can directly use the value:
+    # edible: bool = True
+
+    related_fruits: list[str] = field(default_factory=list) # create a new list every time it's called.
+    # related_fruits: list[str] = [] # does not create a new list everytime it's called. hence, we have to use field()
+
+
+def main():
+    apple: Fruit = Fruit('Apple', 100, 5)
+    print(apple) # Fruit(name='Apple', grams=100, price_per_kg=5, edible=True, related_fruits=[])
+
+    pear: Fruit = Fruit('Pear', 250, 10, related_fruits=['Apple', 'Orange'])
+    print(pear) # Fruit(name='Pear', grams=250, price_per_kg=10, edible=True, related_fruits=['Apple', 'Orange'])
+    print(pear.related_fruits) # ['Apple', 'Orange']
+
+
+if __name__ == '__main__':
+    main()
+
+
+
+from dataclasses import dataclass, field
+
+@dataclass
+class Fruit:
+    name: str
+    grams: float
+    price_per_kg: float
+    total_price: float = field(init=False) # this will be initialized later
+    # we can't initialize it here if it's value depends on other values.
+
+    def __post_init__(self): # called automatically after initialization. only runs once.
+        self.total_price = (self.grams/1000)*self.price_per_kg
+
+    def describe(self):
+        print(f'{self.grams}g of {self.name} costs ${self.total_price}')
+
+def main():
+    apple: Fruit = Fruit('Apple', 1500, 5)
+    orange: Fruit = Fruit('Orange', 2500, 10)
+
+    print(apple) # Fruit(name='Apple', grams=1500, price_per_kg=5, total_price=7.5)
+    print(orange) # Fruit(name='Orange', grams=2500, price_per_kg=10, total_price=25.0)
+
+    apple.describe() # 1500g of Apple costs $7.5
+    orange.describe() # 2500g of Orange costs $25.0
+
+if __name__ == '__main__':
+    main()
+
+
+
+from dataclasses import dataclass, field, InitVar
+
+@dataclass
+class Fruit:
+    name: str
+    grams: float
+    price_per_kg: float
+    is_rare: InitVar[bool | None] = None  # is_rare can only be used for initialising our post_init. it can't be used outside.
+    total_price: float = field(init=False) # this will be initialized later
+    # we can't initialize it here if it's value depends on other values.
+
+    def __post_init__(self, is_rare: bool | None): # called automatically after initialization. only runs once.
+        if is_rare:
+            self.price_per_kg *= 2
+        self.total_price = (self.grams/1000)*self.price_per_kg
+
+    def describe(self):
+        print(f'{self.grams}g of {self.name} costs ${self.total_price}')
+
+def main():
+    apple: Fruit = Fruit('Apple', 1500, 5)
+    orange: Fruit = Fruit('Orange', 2500, 10)
+    passion: Fruit = Fruit('Passion', 100, 50, is_rare=True)
+
+    print(apple) # Fruit(name='Apple', grams=1500, price_per_kg=5, total_price=7.5)
+    print(orange) # Fruit(name='Orange', grams=2500, price_per_kg=10, total_price=25.0)
+    print(passion) # Fruit(name='Passion', grams=100, price_per_kg=100, total_price=10.0)
+
+    apple.describe() # 1500g of Apple costs $7.5
+    orange.describe() # 2500g of Orange costs $25.0
+    passion.describe() # 100g of Passion costs $10.0 -> price is doubled.
+
+
+
+if __name__ == '__main__':
+    main()
+
+
+from dataclasses import dataclass, field, InitVar
+
+@dataclass
+class Fruit:
+    name: str
+    grams: float
+    price_per_kg: float
+
+    @property # @property makes sure we get the most upto date value each time we use the variable total_price
+    def total_price(self):
+        # we can treat it as a variable.
+        # obj.total_price -> can be called from outside, instead of object.total_price()
+        return (self.grams/1000) * self.price_per_kg
+
+    def describe(self):
+        print(f'{self.grams}g of {self.name} costs ${self.total_price}')
+
+def main():
+    apple: Fruit = Fruit('Apple', 1500, 5)
+
+    print(apple) # Fruit(name='Apple', grams=1500, price_per_kg=5)
+    apple.price_per_kg = 20 # this doesn't change total price from __post_init__. now, it's called from @property. hence, value will be updated.
+    print(apple) # Fruit(name='Apple', grams=1500, price_per_kg=20)
+    apple.describe() # 1500g of Apple costs $30.0
+    print(apple.total_price) # 30.0
+
+
+if __name__ == '__main__':
+    main()
+
+
+from dataclasses import dataclass, field
+from uuid import uuid4, UUID
+
+@dataclass
+class Note:
+    id: UUID = field(init=False)
+    title: str
+    body: str
+
+    def __post_init__(self):
+        self.id = uuid4()
+
+class NoteApp:
+    def __init__(self, author: str, notes: list[Note] | None = None):
+        self.author = author
+
+        if notes is None:
+            self._notes = [] # _variables shouldn't be used outside class.
+        else:
+            self._notes = notes
+
+        self.display_instructions()
+
+    @staticmethod
+    def display_instructions():
+        print('Welcome')
+        print('Commands:')
+        print('1 - new note')
+        print('2 - edit note')
+        print('3 - delete note')
+        print('4 - display all notes')
+
+    def _add_note(self):
+        title: str = input('title: ')
+        body: str = input('body: ')
+
+        note: Note = Note(title, body)
+        self._notes.append(note)
+        print('note added')
+
+    def _edit_note(self):
+        print('which note to edit?')
+        self._show_notes()
+
+        try:
+            note_index: int = int(input('Index: ')) - 1 # convert 1 based index from user input to 0 based index
+            current: Note = self._notes[note_index]
+
+            new_title: str = input('new title: ')
+            new_body: str = input('new body: ')
+
+            current.title = new_title
+            current.body = new_body
+            print('note updated')
+        except IndexError:
+            print('please select a valid note index')
+            self._edit_note()
+        except ValueError:
+            print('index cannot be empty')
+            print('Aborting operation')
+
+    def _delete_note(self):
+        print('which note to delete?')
+        self._show_notes()
+
+        try:
+            note_index: int = int(input('Index: ')) - 1  # convert 1 based index from user input to 0 based index
+            del self._notes[note_index]
+            print('note deleted')
+        except IndexError:
+            print('please select a valid note index')
+            self._delete_note()
+        except ValueError:
+            print('index cannot be empty')
+            print('Aborting operation')
+
+    def _show_notes(self):
+        if not self._notes:
+            print('no notes')
+            return
+
+        for i, note in enumerate(self._notes, start = 1):
+            print(f'[{i}] {note.title} : {note.body}')
+
+
+    def _select_option(self, user_input: str):
+        if user_input not in ['1', '2', '3', '4']:
+            print('please pick valid option')
+            return
+
+        if user_input == '1':
+            self._add_note()
+        elif user_input == '2':
+            self._edit_note()
+        elif user_input == '3':
+            self._delete_note()
+        elif user_input == '4':
+            self._show_notes()
+
+    def run_app(self): # only public method in the class
+        while True:
+            user_input: str = input('You: ')
+            self._select_option(user_input)
+
+
+def main():
+    sample_notes: list[Note] = [
+        Note(title='Title1', body='Hello there, sourav!'),
+        Note(title='Title2', body='More text!'),
+    ]
+    note_app: NoteApp = NoteApp(author='sourav', notes=sample_notes)
+    note_app.run_app()
+
+if __name__ == '__main__':
+    main()
 
 
