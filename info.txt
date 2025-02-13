@@ -1,0 +1,7 @@
+new file is created.
+new file is added.
+new file should be closed.
+I am newly added text!
+eggs
+ham
+spam

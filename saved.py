@@ -2168,3 +2168,666 @@ if __name__ == '__main__':
     main()
 
 
+
+import asyncio
+from asyncio import Task
+from datetime import datetime
+
+async def fetch_data(input_data: int)-> dict:
+    print('fetching data')
+    start_time: datetime = datetime.now()
+    await asyncio.sleep(3)
+    end_time: datetime = datetime.now()
+    print('data retrieved')
+    return {
+        'input': input_data,
+        'start_time': f'{start_time:%H:%M:%S}',
+        'end_time': f'{end_time:%H:%M:%S}'
+        }
+
+
+async def main():
+    task1: Task[dict] = asyncio.create_task(fetch_data(1))
+    task2: Task[dict] = asyncio.create_task(fetch_data(2))
+
+    data1: dict = await  task1
+    data2: dict = await task2
+
+    print(f'{data1=}')
+    print(f'{data2=}')
+
+if __name__=='__main__':
+    asyncio.run(main=main())
+
+
+
+import asyncio
+from asyncio import Task
+from datetime import datetime
+
+
+async def fetch_data(input_data: int, *, delay: int) -> dict:
+    print('fetching data')
+    start_time: datetime = datetime.now()
+    await asyncio.sleep(delay)
+    end_time: datetime = datetime.now()
+    print('data retrieved')
+    return {
+        'input': input_data,
+        'start_time': f'{start_time:%H:%M:%S}',
+        'end_time': f'{end_time:%H:%M:%S}'
+    }
+
+
+async def main():
+    task: Task[dict] = asyncio.create_task(fetch_data(1, delay=3))
+    await asyncio.sleep(1)
+    print('running other code.')
+    data: dict = await task
+    print(data)
+
+
+    task: Task[dict] = asyncio.create_task(fetch_data(2, delay=10))
+    await asyncio.sleep(1)
+    task.cancel(msg='Took too long') # cancelling task
+    await asyncio.sleep(1) # to register that task has been cancelled can task some time. So, we are adding delay here.
+    print(task.cancelled()) # True . # if we don't add delay, then, this could be False as task cancellation might not be registered yet.
+    try:
+        data: dict = await task
+        print(data)
+    except asyncio.CancelledError as e:
+        print('Task was cancelled...')
+        print(e)
+        print(task.cancelled()) # True . # if we don't add delay, then, this could be False as task cancellation might not be registered yet.
+
+
+    task: Task[dict] = asyncio.create_task(fetch_data(3, delay=3))
+    await asyncio.sleep(1) # task takes 3 seconds. but we are sleeping for only 1 second.
+    try:
+        data: dict = task.result() # we are not waiting for the task to complete. which will give error.
+        print(data)
+    except asyncio.InvalidStateError as e:
+        print(e) # Result is not set
+
+
+    task: Task[dict] = asyncio.create_task(fetch_data(4, delay=3))
+    print(task.done()) # False
+    data: dict = await task # Task is completed here.
+    print(data)
+    print(task.done()) # True
+    if task.done():
+        data = task.result() # Only fetch result if task is done
+
+
+    task: Task[dict] = asyncio.create_task(fetch_data(5, delay=30))
+    try:
+        data: dict = await asyncio.wait_for(task, timeout=3)
+        print(data)
+    except asyncio.TimeoutError:
+        print('Request took too loong...')
+
+if __name__ == '__main__':
+    asyncio.run(main=main())
+
+
+
+import asyncio
+from asyncio import Task, Future
+from datetime import datetime
+
+
+async def fetch_data(input_data: int, *, delay: int, fails: bool) -> dict:
+    print('fetching data')
+    start_time: datetime = datetime.now()
+    await asyncio.sleep(delay)
+    end_time: datetime = datetime.now()
+    if fails:
+        raise Exception('Something went wrong...')
+
+    print('data retrieved')
+    return {
+        'input': input_data,
+        'start_time': f'{start_time:%H:%M:%S}',
+        'end_time': f'{end_time:%H:%M:%S}'
+    }
+
+async def main():
+    tasks: Future = asyncio.gather(
+        fetch_data(1,delay=1, fails=False),
+        fetch_data(2, delay=2, fails=False),
+        fetch_data(3, delay=1, fails=True), # this will fail
+        return_exceptions=True # if exceptions occur, then return exception instead of failing.
+    )
+    results: list[dict] = await tasks
+    for result in results:
+        print(result)
+        # {'input': 1, 'start_time': '08:08:06', 'end_time': '08:08:07'}
+        # {'input': 2, 'start_time': '08:08:06', 'end_time': '08:08:08'}
+        # Something went wrong...
+
+if __name__ == '__main__':
+    asyncio.run(main=main())
+
+
+
+from datetime import datetime
+from asyncio import Future
+import asyncio
+
+import requests
+from requests import Response
+
+async def check_status(url: str) -> dict[str, int | str]:
+    start_time: datetime = datetime.now()
+    response: Response = await asyncio.to_thread(requests.get, url, None)
+    end_time: datetime = datetime.now()
+
+    return {
+        'website': url,
+        'status': response.status_code,
+        'start_time': f'{start_time:%H:%M:%S}',
+        'end_time': f'{end_time:%H:%M:%S}'
+    }
+
+async def main():
+    tasks: Future = asyncio.gather(
+        check_status('https://bing.com'),
+        check_status('https://google.com'),
+        check_status('https://apple.com'),
+        check_status('https://lol'),
+        return_exceptions=True
+    )
+
+    results: list[dict] = await tasks
+    print(results)
+    for result in results:
+        print(result)
+
+
+if __name__ == '__main__':
+    asyncio.run(main=main())
+
+
+
+# static type checkers like mypy can be used.
+items: list[str] = ['cup', 'apple', True, [1,2,3]] # gives warning for True, [1,2,3]
+
+def fun(default: int = None): # gives warning for default with int type has None value.
+    ...
+
+
+# walrus operator is controversial. can be more difficult to read
+
+def description(numbers: list[int]):
+    # n_length: int = len(numbers)
+    # n_sum: int = sum(numbers)
+    # n_mean: float = n_sum/n_length
+    #
+    # details: dict = {
+    #     'length': n_length,
+    #     'sum': n_sum,
+    #     'mean': n_mean
+    # }
+    details: dict = {
+        'length': (n_length := len(numbers)),
+        'sum': (n_sum := sum(numbers)),
+        'mean': (n_mean := n_sum/n_length)
+    }
+
+
+    return details
+
+def main():
+    numbers: list[int] = [1,10,5,200,-4,7]
+    print(description(numbers))
+
+    print(x := 1 > 0)
+    print(x)
+
+    items: dict[int, str] = {1: 'Cup', 2: 'Chair'}
+    if item := items.get(3):
+        print(f'you have : {item}')
+    else:
+        print('no item found...')
+
+main()
+
+
+
+from typing import Callable
+
+p = lambda x: print(x)
+
+p(10)
+p('Hello')
+
+add = lambda a,b: a + b
+print(add(5,11))
+
+def use_all(f: Callable, values: list[int]):
+    for value in values:
+        f(value)
+
+use_all(lambda v: print(f'{v * "X"}'), [2,4,10])
+# XX
+# XXXX
+# XXXXXXXXXX
+
+def multiply_x(value: int):
+    print(f'{value * "X"}')
+
+use_all(multiply_x, [2,4,10])
+# XX
+# XXXX
+# XXXXXXXXXX
+
+
+names: list[str] = ['Bob', 'James', 'Samantha', 'Luigi', 'Joe']
+sorted_names: list[str] = sorted(names, key=lambda x: len(x))
+print(sorted_names)
+# ['Bob', 'Joe', 'James', 'Luigi', 'Samantha']
+
+
+
+from typing import Generator
+
+def five_numbers() -> Generator:
+    for i in range(1,6):
+        yield i
+
+numbers: Generator = five_numbers()
+print(next(numbers)) # 1
+print(next(numbers)) # 2
+print(next(numbers)) # 3
+print(list(numbers)) # [4,5]
+print(list(numbers)) # []
+
+
+def huge_data():
+    for i in range(1, 100_000_000_000):
+        yield i
+
+data: Generator = huge_data() # memory efficient
+print(next(data)) # 1
+for i in range(200):
+    print(next(data))
+
+
+def generate_vowels() -> Generator:
+    vowels: str = 'aeiou'
+    for vowel in vowels:
+        yield vowel
+
+vowels: Generator = generate_vowels()
+try:
+    print(next(vowels)) # a
+    print(next(vowels)) # e
+    print(next(vowels)) # i
+    print(next(vowels)) # o
+    print(next(vowels)) # u
+    print(next(vowels)) # StopIteration error
+except StopIteration:
+    print('reached the end of iteration')
+
+
+
+
+status: int = 403
+
+match status:
+    case 200:
+        print('connected')
+    case 403:
+        print('forbidden')
+    case 404:
+        print('not found')
+    case _: # everything else which is not defined
+        print('unknown')
+
+user_input: str = input('enter command: ') # enlarge cat.jpg 20
+command: list[str] = user_input.split()
+match command:
+    case 'find', *images: # find cat.jpg banana.jpg
+        print(f'Finding: {images}...')
+    case 'enlarge', image, amount: # enlarge cat.jpg 20
+        print(f'you enlarged {image} by {amount}x') # you enlarged cat.jpg by 20x
+    case 'rename', image, new_name if len(new_name) > 3:
+        print(f'{image} was renamed to {new_name}')
+    case 'x' | 'delete', *images:
+        print(f'deleting: {images}')
+    case _:
+        print('command not found')
+
+
+
+import time
+from typing import Callable
+from functools import wraps
+
+def get_time(func: Callable) -> Callable:
+    """Times how long it takes to execute a function"""
+
+    @wraps(func)
+    def wrapper(*args, **kwargs) -> None:
+        start_time: float = time.perf_counter()
+        func(*args, **kwargs)
+        end_time: float = time.perf_counter()
+
+        print(f'Time: {end_time - start_time:.3f}s')
+
+    return wrapper
+
+@get_time
+def calculate() -> None:
+    """calculate() docstring"""
+
+    print('Calculating')
+    for i in range(200_000_000):
+        pass
+    print('Done')
+
+
+calculate()
+print(calculate.__name__)
+print(calculate.__doc__)
+
+
+import time
+from typing import Callable, Any
+from functools import wraps
+
+def repeat(number: int) -> Callable:
+    """repeat a function call x amount of times"""
+
+    def decorator(func: Callable) -> Callable:
+
+        @wraps(func)
+        def wrapper(*args, **kwargs) -> Any:
+            value: Any = None
+            for _ in range(number):
+                value = func(*args, **kwargs)
+            return value
+
+        return wrapper
+
+    return decorator
+
+@repeat(number=3)
+def greet(name: str):
+    """a function to greet people"""
+    print(f'hello, {name}')
+
+
+greet('Sourav')
+
+
+
+from enum import Enum
+
+class State(Enum):
+    OFF: int = 0
+    ON: int = 1
+
+state: State = State.OFF
+
+
+if state == State.ON:
+    print('device on')
+elif state == State.OFF:
+    print('device off')
+else:
+    print('unknown device state')
+
+class Color(Enum):
+    RED: str = 'R'
+    GREEN: str = 'G'
+    BLUE: str = 'B'
+
+red: Color = Color.RED
+print(red) # Color.RED
+print(red.value) # R
+print(red.name) # RED
+print(Color('R')) # Color.RED
+
+
+
+from functools import cache
+
+@cache
+def fibonacci(n):
+    if n<3:
+        return n
+    else:
+        return fibonacci(n-1)+fibonacci(n-2)
+
+print(fibonacci(500))
+print(fibonacci.cache_info()) # CacheInfo(hits=497, misses=500, maxsize=None, currsize=500)
+fibonacci.cache_clear()
+print(fibonacci.cache_info()) # CacheInfo(hits=0, misses=0, maxsize=None, currsize=0)
+
+
+
+import time
+from functools import cached_property
+
+class DataSet:
+    def __init__(self, data: list[float]):
+        self._data = data
+
+    def show_data(self):
+        print(self._data)
+
+    @cached_property
+    def sum(self):
+        print('calculating')
+        time.sleep(2)
+        return sum(self._data)
+
+    @cached_property
+    def mean(self):
+        print('calculating mean.')
+        time.sleep(2)
+        return sum(self._data) / len(self._data)
+
+def main():
+    ds: DataSet = DataSet([1.5,2.4,10,7])
+    ds.show_data()
+
+    while True:
+        user_input: str = input('You: ').lower()
+        if user_input == 'clear sum':
+            del ds.sum
+            print('sum cleared')
+        elif user_input == 'clear mean':
+            del ds.mean
+            print('mean cleared')
+        elif user_input == 'sum':
+            print(ds.sum)
+        elif user_input == 'mean':
+            print(ds.mean)
+        else:
+            print('unknown commands..')
+
+main()
+
+
+
+import time
+
+class Internet:
+    def __init__(self, provider: str):
+        self.provider = provider
+
+    def connect(self):
+        print(f'{self.provider} connecting.')
+        time.sleep(2)
+        print(f'{self.provider} connected')
+
+def test_connect():
+    print('you are now connected')
+
+def main():
+    internet: Internet = Internet('Verizon')
+    internet.connect = test_connect # monkey patching.
+    internet.connect() # instant response.
+
+main()
+
+
+
+
+from timeit import timeit, repeat
+
+a: str = 'list(range(1000))'
+b: str = 'list(range(1000))'
+
+warm_up: float = timeit(stmt=a, number=100_000) # warm up -> makes sure interpreter is running correctly.
+
+a_time: float = timeit(stmt=a, number=100_000)
+b_time: float = timeit(stmt=b, number=100_000)
+
+print(f'a: {a_time:.3f}s') # a: 0.643s
+print(f'b: {b_time:.3f}s') # b: 0.639s
+
+a: str = 'list(range(1000))'
+b: str = 'list(range(1000))'
+c: str = 'set(range(1000))'
+
+a_time: list[float] = repeat(stmt=a, repeat=5, number=100_000)
+print(a_time) # [0.6400190419954015, 0.6399103330040816, 0.6456580419908278, 0.6451402080128901, 0.6411222080059815]
+
+a_time: float = min(repeat(stmt=a, repeat=5, number=100_000))
+b_time: float = min(repeat(stmt=b, repeat=5, number=100_000))
+c_time: float = min(repeat(stmt=c, repeat=5, number=100_000))
+
+print(f'a: {a_time:.3f}s') # a: 0.642s
+print(f'b: {b_time:.3f}s') # b: 0.642s
+print(f'c: {c_time:.3f}s') # c: 1.169s
+
+
+math_power_time: float = timeit(stmt='math.pow(100,66)', setup='import math')
+print(f'math.pow: {math_power_time:.3f}s')
+
+power_time: float = timeit('a**b', setup='a,b=100,66')
+print(f'a**b : {power_time:.3f}s')
+
+setup: str = """
+import math
+
+a:int = 10
+b: int = 3
+"""
+
+math_power_time: float = timeit(stmt='math.pow(a, b)', setup=setup)
+print(f'math.pow: {math_power_time:.3f}s')
+
+power_time: float = timeit('a**b', setup='a,b=100,66')
+print(f'a**b : {power_time:.3f}s')
+
+file_path: str = 'info.txt'
+
+with open(file_path, 'r') as f:
+    print(f.read())
+    # new file is created.
+    # new file is added.
+    # new file should be closed.
+
+try:
+    with open('random_file_not_exist.txt', 'r') as f:
+        print(f.read())
+except FileNotFoundError:
+    print(f'No file path found')
+
+with open(file_path) as f:  # default is read mode
+    print(f.read())
+    # new file is created.
+    # new file is added.
+    # new file should be closed.
+    print(f.read())  # empty. once everything is read, we can't read again.
+
+with open(file_path) as f:  # default is read mode
+    text: str = f.read()  # store in variable if we want to repeat it.
+    print(text)  # can be repeated
+    print(text)  # can be repeated
+
+with open(file_path) as f:  # default is read mode
+    print(f.read(5))  # new f -> only 5 characters are read
+    print(f.read(5))  # ile i -> next 5 characters are read
+
+with open(file_path) as f:  # default is read mode
+    print(f.readline())  # print adds new line automatically. so, extra new line can be there.
+    # new file is created.
+    #
+    print(f.readline(), end='')  # print new line is removed.
+    # new file is added.
+
+with open(file_path) as f:  # default is read mode
+    print(f.readline(5), end='')
+    print(f.readline(3), end='')
+    print(f.readline(), end='')
+    # new file is created.
+
+with open(file_path) as f:  # default is read mode
+    print(f.readlines())
+    # ['new file is created.\n', 'new file is added.\n', 'new file should be closed.']
+
+with open(file_path, 'a') as f:  # default is read mode
+    # write single line
+    f.write('I am newly added text!\n')  # new line added at the end.
+
+    # write multiple lines
+    f.writelines(
+        ['eggs\n', 'ham\n', 'spam\n']
+    )
+    # new file is created.
+    # new file is added.
+    # new file should be closed.
+    # I am newly added text!
+    # I am newly added text!
+    # eggs
+    # ham
+    # spam
+
+with open('file_does_not_exist.txt',
+          'a') as f:  # if file does not exist, 'a' will create it instead of raising exceptions
+    f.writelines('hi')
+
+# write removes all the existing lines
+with open('info1.txt', 'w') as txt:
+    txt.write('hello\n')
+    txt.write('world\n')
+
+
+
+import json
+
+file_path: str = 'data.json'
+
+with open(file_path, 'r') as file:
+    data: dict = json.load(file) # load -> convert from file
+    print(data) # {'name': 'mario', 'age': 33, 'friends': ['Luigi', 'Toad'], 'other_info': None}
+
+my_json: str = '''
+{
+  "name": "mario",
+  "age" : 33,
+  "friends": ["Luigi", "Toad"],
+  "other_info": null
+}
+'''
+data: dict = json.loads(my_json) # loads -> load string -> convert from string.
+print(data)
+# {'name': 'mario', 'age': 33, 'friends': ['Luigi', 'Toad'], 'other_info': None}
+
+
+data: dict = {
+    'name': 'Bob', 'age': 43, 'job': None
+}
+
+with open('new_json.json', 'w') as file:
+    json.dump(data, file) # {"name": "Bob", "age": 43, "job": null} -> adds to file.
+
+json_format: str = json.dumps(data) # returns string of json.
+print(json_format) # {"name": "Bob", "age": 43, "job": null}
+
+
